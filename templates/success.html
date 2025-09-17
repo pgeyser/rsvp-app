@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}RSVP Confirmed - Event RSVP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="success-message">
+        <h1>RSVP Confirmed!</h1>
+        <p>Thank you for your RSVP, {{ rsvp_data.full_name }} {{ rsvp_data.surname }}!</p>
+        
+        <div class="confirmation-details">
+            <h2>Your Details</h2>
+            <div class="details-grid">
+                <div class="detail">
+                    <strong>Name:</strong> {{ rsvp_data.full_name }} {{ rsvp_data.surname }}
+                </div>
+                <div class="detail">
+                    <strong>Email:</strong> {{ rsvp_data.email }}
+                </div>
+                <div class="detail">
+                    <strong>Phone:</strong> {{ rsvp_data.cellphone }}
+                </div>
+                {% if rsvp_data.bringing_guest == 'yes' and rsvp_data.guest_list %}
+                <div class="detail">
+                    <strong>Guests:</strong><br>
+                    {% for guest in rsvp_data.guest_list.split('\n') if guest.strip() %}
+                        {{ guest.strip() }}<br>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="detail">
+                    <strong>Dietary Requirements:</strong> {{ rsvp_data.dietary_requirements }}
+                </div>
+                {% if rsvp_data.food_allergies %}
+                <div class="detail">
+                    <strong>Food Allergies:</strong> {{ rsvp_data.food_allergies }}
+                </div>
+                {% endif %}
+                {% if user_seat %}
+                <div class="detail">
+                    <strong>Your Seat:</strong> {{ user_seat.table }} - Seat {{ user_seat.seat }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="next-steps">
+            <h3>What's Next?</h3>
+            <ul>
+                <li>You will receive a confirmation email shortly</li>
+                <li>{% if user_seat %}You can change your seat until October 1, 2025{% else %}Please select your seat from the seating chart{% endif %}</li>
+                <li>Arrive at the venue 30 minutes before the event</li>
+            </ul>
+        </div>
+
+        <div class="actions">
+            {% if not user_seat %}
+                <a href="{{ url_for('seating_chart', email=rsvp_data.email) }}" class="btn btn-primary">Select Your Seat</a>
+            {% endif %}
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Return to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

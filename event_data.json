@@ -1,0 +1,141 @@
+{
+  "rsvps": {
+    "test@test.com": {
+      "full_name": "Pieter",
+      "surname": "Geyser",
+      "email": "test@test.com",
+      "cellphone": "0824568456",
+      "bringing_guest": "yes",
+      "guest_list": "John Doe",
+      "dietary_requirements": "Vegan",
+      "food_allergies": "Nuts",
+      "submitted_at": "2025-09-17T13:24:52.062215"
+    }
+  },
+  "seats": {
+    "table_1": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_2": [
+      null,
+      {
+        "email": "test@test.com",
+        "full_name": "Pieter",
+        "surname": "Geyser"
+      },
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_3": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_4": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_5": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_6": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_7": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_8": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_9": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_10": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  }
+}

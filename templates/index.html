@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Event RSVP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero">
+        <h1>Event RSVP</h1>
+        <p>Welcome to our special event! Please RSVP to confirm your attendance and secure your seat.</p>
+        <a href="{{ url_for('rsvp') }}" class="btn btn-primary">RSVP Now</a>
+    </div>
+    
+    <div class="event-details">
+        <h2>Event Details</h2>
+        <div class="details-grid">
+            <div class="detail">
+                <h3>Date & Time</h3>
+                <p>October 15, 2025<br>6:00 PM - 11:00 PM</p>
+            </div>
+            <div class="detail">
+                <h3>Location</h3>
+                <p>Grand Ballroom<br>123 Event Plaza</p>
+            </div>
+            <div class="detail">
+                <h3>Dress Code</h3>
+                <p>Cocktail Attire</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

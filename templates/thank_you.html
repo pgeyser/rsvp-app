@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Thank You - Event RSVP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="thank-you-message">
+        <h1>Thank You</h1>
+        <p>Thank you for letting us know that you won't be able to attend our event.</p>
+        <p>We're sorry you can't make it, but we appreciate you taking the time to respond.</p>
+        
+        <div class="actions">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Return to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

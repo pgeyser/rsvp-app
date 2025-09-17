@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Seating Chart - Event RSVP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Select Your Seat</h1>
+    
+    <div class="deadline-notice">
+        <p><strong>Note:</strong> Seat selection deadline is {{ deadline }}. 
+        {% if deadline_passed %}
+            <span class="error">The deadline has passed. You cannot change your seat.</span>
+        {% else %}
+            <span class="success">You can still change your seat until this date.</span>
+        {% endif %}
+        </p>
+    </div>
+
+    <div class="seating-legend">
+        <div class="legend-item">
+            <div class="seat available"></div>
+            <span>Available</span>
+        </div>
+        <div class="legend-item">
+            <div class="seat occupied"></div>
+            <span>Occupied</span>
+        </div>
+        <div class="legend-item">
+            <div class="seat selected"></div>
+            <span>Your Seat</span>
+        </div>
+    </div>
+
+    <div class="seating-chart">
+        {% for table_name, table_seats in seats.items() %}
+            <div class="table" data-table="{{ table_name }}">
+                <h3>{{ table_name.replace('_', ' ').title() }}</h3>
+                <div class="seats-grid">
+                    {% for i in range(10) %}
+                        <div class="seat {% if table_seats[i] %}occupied{% else %}available{% endif %}" 
+                             data-table="{{ table_name }}" 
+                             data-seat="{{ i }}"
+                             {% if not deadline_passed and not table_seats[i] %}onclick="selectSeat('{{ table_name }}', {{ i }})"{% endif %}>
+                            <span class="seat-number">{{ i + 1 }}</span>
+                            {% if table_seats[i] %}
+                                <span class="occupant-name">{{ table_seats[i].full_name }} {{ table_seats[i].surname }}</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div id="seat-info" class="seat-info"></div>
+    
+    <div class="form-actions">
+        <a href="{{ url_for('success', email=email) }}" class="btn btn-secondary">Continue to Confirmation</a>
+    </div>
+</div>
+
+<script>
+const userEmail = '{{ email }}';
+let selectedSeat = null;
+
+// Notification function
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Animate out and remove
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+function selectSeat(table, seatIndex) {
+    {% if deadline_passed %}
+        alert('Seat selection deadline has passed.');
+        return;
+    {% endif %}
+    
+    fetch('/api/select-seat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: userEmail,
+            table: table,
+            seat: seatIndex
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove user from any previous seat
+            document.querySelectorAll('.seat').forEach(seat => {
+                if (seat.classList.contains('selected')) {
+                    seat.classList.remove('selected');
+                    seat.classList.add('available');
+                    seat.innerHTML = '<span class="seat-number">' + (parseInt(seat.dataset.seat) + 1) + '</span>';
+                }
+            });
+            
+            // Update the selected seat
+            const seatElement = document.querySelector(`[data-table="${table}"][data-seat="${seatIndex}"]`);
+            seatElement.classList.remove('available');
+            seatElement.classList.add('selected');
+            seatElement.innerHTML = '<span class="seat-number">' + (seatIndex + 1) + '</span><span class="occupant-name">You</span>';
+            
+            // Show success message
+            showNotification(data.message, 'success');
+            
+            // Update seat info
+            showSeatInfo(table, seatIndex);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error selecting seat. Please try again.');
+    });
+}
+
+function titleCase(str) {
+    return str.replace('_', ' ').replace(/\w\S*/g, (txt) => 
+        txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    );
+}
+
+function showSeatInfo(table, seatIndex) {
+    fetch(`/api/seat-info?table=${table}&seat=${seatIndex}`)
+    .then(response => response.json())
+    .then(data => {
+        const infoDiv = document.getElementById('seat-info');
+        if (data.occupied) {
+            infoDiv.innerHTML = `<p><strong>Seat ${seatIndex + 1} at ${titleCase(table)}:</strong> Occupied by ${data.occupant}</p>`;
+        } else {
+            infoDiv.innerHTML = `<p><strong>Seat ${seatIndex + 1} at ${titleCase(table)}:</strong> Available</p>`;
+        }
+    });
+}
+
+// Add hover effect for seat info
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.seat').forEach(seat => {
+        seat.addEventListener('mouseenter', function() {
+            const table = this.dataset.table;
+            const seatIndex = this.dataset.seat;
+            showSeatInfo(table, parseInt(seatIndex));
+        });
+    });
+});
+</script>
+{% endblock %}

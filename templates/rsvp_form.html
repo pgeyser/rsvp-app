@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}RSVP Form - Event RSVP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>RSVP for the Event</h1>
+    
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    
+    <form id="rsvp-form" method="POST" action="{{ url_for('rsvp') }}">
+        <div class="form-section">
+            <h3>Will you be attending?</h3>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="attending" value="yes" required onchange="toggleAttendingFields()">
+                    Yes, I will attend
+                </label>
+                <label>
+                    <input type="radio" name="attending" value="no" required onchange="toggleAttendingFields()">
+                    No, I cannot attend
+                </label>
+            </div>
+        </div>
+
+        <div id="attending-fields" style="display: none;">
+            <div class="form-section">
+                <h3>Personal Information</h3>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="full_name">Full Name *</label>
+                        <input type="text" id="full_name" name="full_name" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="surname">Surname *</label>
+                        <input type="text" id="surname" name="surname" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="cellphone">Cell Phone *</label>
+                        <input type="tel" id="cellphone" name="cellphone" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Guest Information</h3>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="bringing_guest" value="yes" onchange="toggleGuestList()">
+                        Yes, I'm bringing guests
+                    </label>
+                    <label>
+                        <input type="radio" name="bringing_guest" value="no" onchange="toggleGuestList()">
+                        No, just me
+                    </label>
+                </div>
+                <div id="guest-list-section" style="display: none;">
+                    <label for="guest_list">Guest List (one per line: Full Name, Surname)</label>
+                    <textarea id="guest_list" name="guest_list" rows="4" placeholder="John Doe&#10;Jane Smith"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Dietary Information</h3>
+                <div class="form-field">
+                    <label for="dietary_requirements">Dietary Requirements *</label>
+                    <input type="text" id="dietary_requirements" name="dietary_requirements" 
+                           placeholder="e.g., Vegetarian, Vegan, or None" required>
+                </div>
+                <div class="form-field">
+                    <label for="food_allergies">Food Allergies</label>
+                    <input type="text" id="food_allergies" name="food_allergies" 
+                           placeholder="e.g., Nuts, Shellfish, or None">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit RSVP</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleAttendingFields() {
+    const attendingYes = document.querySelector('input[name="attending"][value="yes"]').checked;
+    const attendingFields = document.getElementById('attending-fields');
+    const form = document.getElementById('rsvp-form');
+    
+    if (attendingYes) {
+        attendingFields.style.display = 'block';
+        // Enable required fields
+        attendingFields.querySelectorAll('input[required]').forEach(input => {
+            input.disabled = false;
+        });
+    } else {
+        attendingFields.style.display = 'none';
+        // Disable required fields for non-attending
+        attendingFields.querySelectorAll('input[required]').forEach(input => {
+            input.disabled = true;
+        });
+        // Submit form immediately for non-attending
+        form.submit();
+    }
+}
+
+function toggleGuestList() {
+    const bringingGuest = document.querySelector('input[name="bringing_guest"][value="yes"]').checked;
+    const guestListSection = document.getElementById('guest-list-section');
+    
+    guestListSection.style.display = bringingGuest ? 'block' : 'none';
+}
+</script>
+{% endblock %}
