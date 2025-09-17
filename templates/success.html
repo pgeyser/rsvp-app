@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}RSVP Confirmed - Event RSVP{% endblock %}
+{% block title %}RSVP Confirmed - Masquerade Awards{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="success-message">
         <h1>RSVP Confirmed!</h1>
-        <p>Thank you for your RSVP, {{ rsvp_data.full_name }} {{ rsvp_data.surname }}!</p>
+        <p style="color: #f8f8f8; font-size: 1.2rem; margin-bottom: 2rem;">Thank you for your RSVP, {{ rsvp_data.full_name }} {{ rsvp_data.surname }}!</p>
+        <p style="color: #d4af37; font-style: italic; font-size: 1.1rem;">We look forward to seeing you at the Masquerade Awards Ceremony!</p>
         
         <div class="confirmation-details">
             <h2>Your Details</h2>

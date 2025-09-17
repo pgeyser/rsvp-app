@@ -1,8 +1,18 @@
-# Event RSVP System
+# Masquerade Awards RSVP System
 
 ## Overview
 
-This is a Flask-based event RSVP management system that allows guests to confirm attendance, provide dietary requirements, and select seating arrangements. The application features a complete guest management workflow including RSVP forms, seating charts, and confirmation pages. It uses a file-based JSON database for data persistence and includes deadline management for seat changes.
+This is a Flask-based Masquerade Awards and Year End Ceremony RSVP management system that allows guests to confirm attendance, provide dietary requirements, and select seating arrangements. The application features a complete guest management workflow including RSVP forms, seating charts, and confirmation pages themed with an elegant black and gold masquerade design. It uses a file-based JSON database for data persistence and includes deadline management for seat changes.
+
+## Recent Changes
+
+### December 2025 - Masquerade Theme Implementation
+- **Event Details Updated**: Changed from generic event to "Masquerade Awards and Year End Ceremony" hosted by Harcourts Dunn on December 4, 2025
+- **Visual Theme**: Implemented elegant black and gold masquerade theme inspired by the provided event artwork
+- **Design Elements**: Added gold accents, elegant typography (Georgia serif), sophisticated gradients, and masquerade-inspired styling
+- **Color Scheme**: Primary colors changed to black (#1a1a1a), gold (#d4af37), and accent colors for an upscale event appearance
+- **Typography**: Changed to Georgia serif font family for elegant, formal appearance
+- **Interactive Elements**: Enhanced buttons, form fields, and seating chart with premium styling and hover effects
 
 ## User Preferences
 
