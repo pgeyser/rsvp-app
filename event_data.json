@@ -10,6 +10,17 @@
       "dietary_requirements": "Vegan",
       "food_allergies": "Nuts",
       "submitted_at": "2025-09-17T13:24:52.062215"
+    },
+    "dsfdsf@test.com": {
+      "full_name": "tet",
+      "surname": "fdsf",
+      "email": "dsfdsf@test.com",
+      "cellphone": "084564864865",
+      "bringing_guest": "no",
+      "guest_list": "",
+      "dietary_requirements": "fdsf",
+      "food_allergies": "dfsdf",
+      "submitted_at": "2025-09-17T13:39:48.537931"
     }
   },
   "seats": {
@@ -26,7 +37,11 @@
       null
     ],
     "table_2": [
-      null,
+      {
+        "email": "dsfdsf@test.com",
+        "full_name": "tet",
+        "surname": "fdsf"
+      },
       {
         "email": "test@test.com",
         "full_name": "Pieter",
