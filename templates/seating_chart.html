@@ -11,7 +11,7 @@
         {% if deadline_passed %}
             <span class="error">The deadline has passed. You cannot change your seat.</span>
         {% else %}
-            <span class="success">You can still change your seat until this date.</span>
+            <span class="info">You can still change your seat until this date.</span>
         {% endif %}
         </p>
     </div>
@@ -33,28 +33,38 @@
 
     <div class="seating-chart">
         {% for table_name, table_seats in seats.items() %}
-            <div class="table" data-table="{{ table_name }}">
-                <h3>{{ table_name.replace('_', ' ').title() }}</h3>
+            <div class="table" data-table="{{ table_name }}">                
+                <h3>{{ table_name.replace('_', ' ').title() }}
+                </h3>
                 <div class="seats-grid">
                     {% for i in range(10) %}
                         <div class="seat {% if table_seats[i] %}occupied{% else %}available{% endif %}" 
                              data-table="{{ table_name }}" 
                              data-seat="{{ i }}"
+                            {% if table_seats[i] %}
+                                title="{{ table_seats[i].full_name }} {{ table_seats[i].surname }}"
+                            {% else %}
+                                title="Available"
+                            {% endif %}
                              {% if not deadline_passed and not table_seats[i] %}onclick="selectSeat('{{ table_name }}', {{ i }})"{% endif %}>
                             <span class="seat-number">{{ i + 1 }}</span>
-                            {% if table_seats[i] %}
+                            <!-- {% if table_seats[i] %}
                                 <span class="occupant-name">{{ table_seats[i].full_name }} {{ table_seats[i].surname }}</span>
-                            {% endif %}
+                            {% endif %} -->
                         </div>
                     {% endfor %}
-                </div>
+                </div>  <br/>
+                <span class="table-occupants-icon" 
+                        title="Show all occupants"
+                        onclick="toggleTableOccupants('{{ table_name }}')"
+                        style="cursor:pointer;">
+                        show quests ?
+                    </span>              
+                <div class="table-occupants-list" id="occupants-list-{{ table_name }}" style="display:none; margin-top:1em; color:white"></div>        
             </div>
-        {% endfor %}
+        {% endfor %}          
     </div>
-
-    <div id="seat-info" class="seat-info"></div>
-    
-    <div class="form-actions">
+    <div style="width: 100%; text-align: center;" class="form-actions">
         <a href="{{ url_for('success', email=email) }}" class="btn btn-secondary">Continue to Confirmation</a>
     </div>
 </div>
@@ -171,6 +181,38 @@ function showSeatInfo(table, seatIndex) {
             infoDiv.innerHTML = `<p><strong>Seat ${seatIndex + 1} at ${titleCase(table)}:</strong> Available</p>`;
         }
     });
+}
+
+function toggleTableOccupants(tableName) {
+    const tableDiv = document.querySelector(`.table[data-table="${tableName}"]`);
+    const seats = tableDiv.querySelectorAll('.seat.occupied');
+    const occupantsListDiv = document.getElementById(`occupants-list-${tableName}`);
+
+    if (occupantsListDiv.style.display === 'none' || occupantsListDiv.style.display === '') {
+        // Build occupants list
+        const occupants = [];
+        seats.forEach(seat => {
+            const occupant = seat.getAttribute('title');
+            if (occupant && occupant !== 'Available') {
+                occupants.push(occupant);
+            }
+        });
+
+        let html = '<strong></strong><p style="margin:0.5em 0 0 0; padding-left:1em;">';
+        if (occupants.length > 0) {
+            occupants.forEach(name => {
+                html += `<p>${name}</p>`;
+            });
+        } else {
+            html += '<p><em>No one assigned yet.</em></p>';
+        }
+        html += '</p>';
+
+        occupantsListDiv.innerHTML = html;
+        occupantsListDiv.style.display = 'block';
+    } else {
+        occupantsListDiv.style.display = 'none';
+    }
 }
 
 // Add hover effect for seat info

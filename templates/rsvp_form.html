@@ -3,7 +3,7 @@
 {% block title %}RSVP Form - Masquerade Awards{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container"">
     <h1>RSVP for the Masquerade Awards Ceremony</h1>
     
     {% if error %}
@@ -24,7 +24,6 @@
                 </label>
             </div>
         </div>
-
         <div id="attending-fields" style="display: none;">
             <div class="form-section">
                 <h3>Personal Information</h3>
@@ -62,6 +61,17 @@
                         No, just me
                     </label>
                 </div>
+
+               <!-- <div  id="guest-list-section" style="display: none;" class="form-section">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="full_name">Full Name *</label>
+                        <input type="text" id="guest_list" name="guest_list" required>
+                    </div>
+                </div>
+              </div> -->
+
+                
                 <div id="guest-list-section" style="display: none;">
                     <label for="guest_list">Guest List (one per line: Full Name, Surname)</label>
                     <textarea id="guest_list" name="guest_list" rows="4" placeholder="John Doe&#10;Jane Smith"></textarea>

@@ -9,9 +9,11 @@ body {
     font-family: 'Georgia', 'Times New Roman', serif;
     line-height: 1.6;
     color: #d4af37;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%) ;
     background-attachment: fixed;
-    min-height: 100vh;
+    min-height: 100vh;  
+    display: flex;
+    flex-direction: column;
 }
 
 /* Header */
@@ -22,8 +24,16 @@ header {
     box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
     border-bottom: 2px solid #d4af37;
     position: relative;
+    
 }
 
+main {
+    flex: 1;
+}
+
+nav {
+    width: 100%;
+}
 nav h1 a {
     color: #d4af37;
     text-decoration: none;
@@ -31,14 +41,14 @@ nav h1 a {
     font-weight: 700;
     font-family: 'Georgia', serif;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-    letter-spacing: 2px;
+    letter-spacing: 2px;    
 }
 
 /* Container */
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 2rem;    
 }
 
 /* Buttons */
@@ -110,6 +120,7 @@ nav h1 a {
     border: 2px solid #d4af37;
     position: relative;
     overflow: hidden;
+
 }
 
 .hero::before {
@@ -159,6 +170,7 @@ nav h1 a {
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     border: 2px solid #d4af37;
     backdrop-filter: blur(10px);
+    
 }
 
 .event-details h2 {
@@ -184,6 +196,8 @@ nav h1 a {
     border-radius: 8px;
     backdrop-filter: blur(5px);
 }
+
+
 
 .detail h3 {
     color: #d4af37;
@@ -316,7 +330,7 @@ nav h1 a {
 
 .table {
     background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(45, 24, 16, 0.9) 100%);
-    padding: 2rem;
+    padding: 2rem;    
     border-radius: 15px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     border: 2px solid #d4af37;
@@ -571,7 +585,11 @@ footer {
     padding: 2rem;
     margin-top: 3rem;
     border-top: 2px solid #d4af37;
-    font-family: 'Georgia', serif;
+    font-family: 'Georgia', serif; 
+}
+footer a{
+        color: #d4af37;
+        text-decoration: none;
 }
 
 /* Placeholder styling */
@@ -615,10 +633,16 @@ footer {
     backdrop-filter: blur(10px);
 }
 
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
+        text-align: center;
+    }
+
+    .container h1 {
+      font-size: 1.5rem;      
     }
     
     .hero h1 {

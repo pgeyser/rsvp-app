@@ -1,38 +1,39 @@
 {
   "rsvps": {
     "test@test.com": {
-      "full_name": "Pieter",
+      "full_name": "Rene",
       "surname": "Geyser",
       "email": "test@test.com",
-      "cellphone": "0824568456",
-      "bringing_guest": "yes",
-      "guest_list": "John Doe",
-      "dietary_requirements": "Vegan",
-      "food_allergies": "Nuts",
-      "submitted_at": "2025-09-17T13:24:52.062215"
-    },
-    "dsfdsf@test.com": {
-      "full_name": "tet",
-      "surname": "fdsf",
-      "email": "dsfdsf@test.com",
-      "cellphone": "084564864865",
+      "cellphone": "08456454684",
       "bringing_guest": "no",
       "guest_list": "",
-      "dietary_requirements": "fdsf",
-      "food_allergies": "dfsdf",
-      "submitted_at": "2025-09-17T13:39:48.537931"
+      "dietary_requirements": "veg",
+      "food_allergies": "veg",
+      "submitted_at": "2025-09-17T18:12:09.377536"
     }
   },
   "seats": {
     "table_1": [
       null,
       null,
+      {
+        "email": "teset@test.com",
+        "full_name": "teset",
+        "surname": "tsdfsd"
+      },
       null,
       null,
+      {
+        "email": "dsfsd@sdfsdf.com",
+        "full_name": "dfdsf",
+        "surname": "sdfds"
+      },
       null,
-      null,
-      null,
-      null,
+      {
+        "email": "pdf@ldks.com",
+        "full_name": "pieter",
+        "surname": "pie"
+      },
       null,
       null
     ],
@@ -42,12 +43,12 @@
         "full_name": "tet",
         "surname": "fdsf"
       },
-      {
-        "email": "test@test.com",
-        "full_name": "Pieter",
-        "surname": "Geyser"
-      },
       null,
+      {
+        "email": "sdf@sdfsd.com",
+        "full_name": "dfdsfds",
+        "surname": "sdfds"
+      },
       null,
       null,
       null,
@@ -58,7 +59,11 @@
     ],
     "table_3": [
       null,
-      null,
+      {
+        "email": "rene@xxx.com",
+        "full_name": "Rene ",
+        "surname": "Geuser"
+      },
       null,
       null,
       null,
@@ -72,7 +77,11 @@
       null,
       null,
       null,
-      null,
+      {
+        "email": "john@doe.tes",
+        "full_name": "John Smith",
+        "surname": "Doe"
+      },
       null,
       null,
       null,
@@ -141,6 +150,70 @@
       null
     ],
     "table_10": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_11": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_12": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_13": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      {
+        "email": "test@test.com",
+        "full_name": "Rene",
+        "surname": "Geyser"
+      },
+      null,
+      null
+    ],
+    "table_14": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "table_15": [
       null,
       null,
       null,
