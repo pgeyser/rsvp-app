@@ -154,6 +154,7 @@ function selectSeat(table, seatIndex) {
 }
 
 function titleCase(str) {
+    if (!str) return 'Unknown Table';
     return str.replace('_', ' ').replace(/\w\S*/g, (txt) => 
         txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
     );

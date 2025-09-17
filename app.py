@@ -27,7 +27,7 @@ def save_db(data):
         json.dump(data, f, indent=2)
 
 # Deadline for seat changes
-SEAT_CHANGE_DEADLINE = date(2025, 10, 1)
+SEAT_CHANGE_DEADLINE = date(2025, 10, 31)
 
 @app.route('/')
 def index():
