@@ -1,0 +1,97 @@
+# Casino Royale RSVP app — rsvp.cbos.co.za
+# Exposed through the Cloudflare Tunnel (cloudflared namespace), so a ClusterIP
+# service is all that is needed. The JSON database lives on a persistent disk;
+# it only supports a single writer, hence replicas: 1 + Recreate.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rsvp-app-data
+  namespace: cbos-apps
+  labels:
+    app: rsvp-app
+    billing: cbos
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: managed-csi
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rsvp-app-deployment
+  namespace: cbos-apps
+  labels:
+    app: rsvp-app
+    billing: cbos
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # the data disk is ReadWriteOnce — old pod must release it first
+  selector:
+    matchLabels:
+      app: rsvp-app
+  template:
+    metadata:
+      labels:
+        app: rsvp-app
+    spec:
+      containers:
+        - name: rsvp-app-container
+          image: cbosacr.azurecr.io/rsvp-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /rsvp-app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: rsvp-app-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rsvp-app-service
+  namespace: cbos-apps
+  labels:
+    app: rsvp-app
+    billing: cbos
+spec:
+  type: ClusterIP
+  selector:
+    app: rsvp-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5000
+      protocol: TCP

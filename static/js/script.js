@@ -70,13 +70,14 @@ function showFieldError(field, message) {
     
     const errorDiv = document.createElement('div');
     errorDiv.className = 'field-error';
-    errorDiv.style.color = '#dc3545';
+    errorDiv.style.color = '#eef3f9';
     errorDiv.style.fontSize = '14px';
+    errorDiv.style.fontWeight = 'bold';
     errorDiv.style.marginTop = '5px';
     errorDiv.textContent = message;
-    
+
     field.parentNode.appendChild(errorDiv);
-    field.style.borderColor = '#dc3545';
+    field.style.borderColor = '#eef3f9';
 }
 
 function clearFieldError(field) {
@@ -84,7 +85,7 @@ function clearFieldError(field) {
     if (existingError) {
         existingError.remove();
     }
-    field.style.borderColor = '#ddd';
+    field.style.borderColor = '#c8d1dd';
 }
 
 function isValidEmail(email) {
@@ -101,7 +102,7 @@ function isValidPhone(phone) {
 // Seating chart specific functions
 function highlightTable(tableElement, highlight = true) {
     if (highlight) {
-        tableElement.style.boxShadow = '0 5px 20px rgba(0, 123, 255, 0.3)';
+        tableElement.style.boxShadow = '0 5px 20px rgba(47, 93, 168, 0.4)';
         tableElement.style.transform = 'translateY(-2px)';
     } else {
         tableElement.style.boxShadow = '0 3px 10px rgba(0,0,0,0.1)';
@@ -126,7 +127,7 @@ function showNotification(message, type = 'info') {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+        background: ${type === 'success' ? '#2f5da8' : type === 'error' ? '#1f2733' : '#64748b'};
         color: white;
         padding: 1rem 2rem;
         border-radius: 8px;

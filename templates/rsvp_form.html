@@ -1,25 +1,34 @@
 {% extends "base.html" %}
 
-{% block title %}RSVP Form - Masquerade Awards{% endblock %}
+{% block title %}RSVP Form - Casino Royale Awards{% endblock %}
 
 {% block content %}
-<div class="container"">
-    <h1>RSVP for the Masquerade Awards Ceremony</h1>
-    
+<div class="container">
+    <h1>RSVP for the Casino Royale Awards Ceremony</h1>
+
+    {% if table_label %}
+        <div class="alert alert-info">You're claiming a seat at <strong>{{ table_label }}</strong> &mdash; RSVP below and we'll take you straight to that table.</div>
+    {% endif %}
+
     {% if error %}
         <div class="alert alert-error">{{ error }}</div>
     {% endif %}
-    
+
     <form id="rsvp-form" method="POST" action="{{ url_for('rsvp') }}">
+        {% if table %}
+        <input type="hidden" name="table" value="{{ table }}">
+        {% endif %}
         <div class="form-section">
             <h3>Will you be attending?</h3>
             <div class="radio-group">
                 <label>
-                    <input type="radio" name="attending" value="yes" required onchange="toggleAttendingFields()">
+                    <input type="radio" name="attending" value="yes" required onchange="toggleAttendingFields()"
+                           {% if form.get('attending') == 'yes' %}checked{% endif %}>
                     Yes, I will attend
                 </label>
                 <label>
-                    <input type="radio" name="attending" value="no" required onchange="toggleAttendingFields()">
+                    <input type="radio" name="attending" value="no" required onchange="toggleAttendingFields()"
+                           {% if form.get('attending') == 'no' %}checked{% endif %}>
                     No, I cannot attend
                 </label>
             </div>
@@ -29,102 +38,138 @@
                 <h3>Personal Information</h3>
                 <div class="form-row">
                     <div class="form-field">
-                        <label for="full_name">Full Name *</label>
-                        <input type="text" id="full_name" name="full_name" required>
+                        <label for="full_name">First name *</label>
+                        <input type="text" id="full_name" name="full_name" autocomplete="given-name"
+                               value="{{ form.get('full_name', '') }}" required>
                     </div>
                     <div class="form-field">
                         <label for="surname">Surname *</label>
-                        <input type="text" id="surname" name="surname" required>
+                        <input type="text" id="surname" name="surname" autocomplete="family-name"
+                               value="{{ form.get('surname', '') }}" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-field">
                         <label for="email">Email Address *</label>
-                        <input type="email" id="email" name="email" required>
+                        <input type="email" id="email" name="email" autocomplete="email"
+                               value="{{ form.get('email', '') }}" required>
                     </div>
                     <div class="form-field">
                         <label for="cellphone">Cell Phone *</label>
-                        <input type="tel" id="cellphone" name="cellphone" required>
+                        <input type="tel" id="cellphone" name="cellphone" autocomplete="tel"
+                               pattern="[0-9+()\s-]{7,20}"
+                               title="Please enter a phone number, e.g. 082 123 4567"
+                               placeholder="e.g. 082 123 4567"
+                               value="{{ form.get('cellphone', '') }}" required>
                     </div>
                 </div>
             </div>
 
             <div class="form-section">
-                <h3>Guest Information</h3>
+                <h3>Partner / Guest Information</h3>
+                <p style="margin-bottom: 1rem; font-style: italic;">Partners welcome</p>
                 <div class="radio-group">
                     <label>
-                        <input type="radio" name="bringing_guest" value="yes" onchange="toggleGuestList()">
-                        Yes, I'm bringing guests
+                        <input type="radio" name="bringing_guest" value="yes" onchange="toggleGuestList()"
+                               {% if form.get('bringing_guest') == 'yes' %}checked{% endif %}>
+                        Yes, I'm bringing a partner
                     </label>
                     <label>
-                        <input type="radio" name="bringing_guest" value="no" onchange="toggleGuestList()">
+                        <input type="radio" name="bringing_guest" value="no" onchange="toggleGuestList()"
+                               {% if form.get('bringing_guest') == 'no' %}checked{% endif %}>
                         No, just me
                     </label>
                 </div>
-
-               <!-- <div  id="guest-list-section" style="display: none;" class="form-section">
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="full_name">Full Name *</label>
-                        <input type="text" id="guest_list" name="guest_list" required>
-                    </div>
-                </div>
-              </div> -->
-
-                
                 <div id="guest-list-section" style="display: none;">
-                    <label for="guest_list">Guest List (one per line: Full Name, Surname)</label>
-                    <textarea id="guest_list" name="guest_list" rows="4" placeholder="John Doe&#10;Jane Smith"></textarea>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="guest_list">Partner Full Name</label>
+                            <input type="text" id="guest_list" name="guest_list"
+                                   value="{{ form.get('guest_list', '') }}">
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="form-section">
                 <h3>Dietary Information</h3>
                 <div class="form-field">
-                    <label for="dietary_requirements">Dietary Requirements *</label>
-                    <input type="text" id="dietary_requirements" name="dietary_requirements" 
-                           placeholder="e.g., Vegetarian, Vegan, or None" required>
+                    <label>Dietary Requirements *</label>
+                    <div class="radio-group">
+                        {% for option in ['None', 'Vegetarian', 'Halal'] %}
+                        <label>
+                            <input type="radio" name="dietary_requirements" value="{{ option }}" required
+                                   {% if form.get('dietary_requirements') == option %}checked{% endif %}>
+                            {{ option }}
+                        </label>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div class="form-field">
-                    <label for="food_allergies">Food Allergies</label>
-                    <input type="text" id="food_allergies" name="food_allergies" 
+                    <label for="food_allergies">Food Allergies or Other Requirements</label>
+                    <input type="text" id="food_allergies" name="food_allergies"
+                           value="{{ form.get('food_allergies', '') }}"
                            placeholder="e.g., Nuts, Shellfish, or None">
                 </div>
             </div>
 
             <button type="submit" class="btn btn-primary">Submit RSVP</button>
         </div>
+
+        <div id="decline-fields" style="display: none;">
+            <div class="form-section">
+                <h3>Sorry to miss you</h3>
+                {% if decline_error %}
+                    <div class="alert alert-error">{{ decline_error }}</div>
+                {% endif %}
+                <p style="margin-bottom: 1rem;">Leave your name and email so we can mark you off the guest list &mdash; nothing is sent until you press the button below.</p>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="decline_name">Full Name *</label>
+                        <input type="text" id="decline_name" name="decline_name" autocomplete="name"
+                               value="{{ form.get('decline_name', '') }}" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="decline_email">Email Address *</label>
+                        <input type="email" id="decline_email" name="decline_email" autocomplete="email"
+                               value="{{ form.get('decline_email', '') }}" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Confirm &mdash; I can't attend</button>
+            </div>
+        </div>
     </form>
 </div>
 
 <script>
+function setSectionActive(section, active) {
+    section.style.display = active ? 'block' : 'none';
+    // Disable hidden inputs so their "required" doesn't block the other path
+    section.querySelectorAll('input').forEach(input => {
+        input.disabled = !active;
+    });
+}
+
 function toggleAttendingFields() {
     const attendingYes = document.querySelector('input[name="attending"][value="yes"]').checked;
-    const attendingFields = document.getElementById('attending-fields');
-    const form = document.getElementById('rsvp-form');
-    
+    const attendingNo = document.querySelector('input[name="attending"][value="no"]').checked;
+
+    setSectionActive(document.getElementById('attending-fields'), attendingYes);
+    setSectionActive(document.getElementById('decline-fields'), attendingNo);
+
     if (attendingYes) {
-        attendingFields.style.display = 'block';
-        // Enable required fields
-        attendingFields.querySelectorAll('input[required]').forEach(input => {
-            input.disabled = false;
-        });
-    } else {
-        attendingFields.style.display = 'none';
-        // Disable required fields for non-attending
-        attendingFields.querySelectorAll('input[required]').forEach(input => {
-            input.disabled = true;
-        });
-        // Submit form immediately for non-attending
-        form.submit();
+        toggleGuestList();
     }
 }
 
 function toggleGuestList() {
     const bringingGuest = document.querySelector('input[name="bringing_guest"][value="yes"]').checked;
     const guestListSection = document.getElementById('guest-list-section');
-    
+
     guestListSection.style.display = bringingGuest ? 'block' : 'none';
 }
+
+// Restore section visibility after a server-side validation re-render
+toggleAttendingFields();
 </script>
 {% endblock %}

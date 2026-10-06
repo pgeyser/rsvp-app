@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+
+# Runtime data lives on the AKS persistent volume, not in git
+data/
+
+# Local tooling
+.claude/
+venv/
+.venv/

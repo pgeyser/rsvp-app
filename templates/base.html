@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Masquerade Awards - RSVP{% endblock %}</title>
+    <title>{% block title %}Casino Royale Awards - RSVP{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
@@ -12,7 +15,7 @@
     </main>
 
     <footer>
-        <a href="https://www.cbos.co.za">CBOS (PTY) LTD &copy; 2025</a>                
+        <img width="100px" src="/static/images/CBOS_Logo_White.png">
     </footer>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     {% block scripts %}{% endblock %}

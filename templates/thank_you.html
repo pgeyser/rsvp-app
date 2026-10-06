@@ -1,17 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}Thank You - Masquerade Awards{% endblock %}
+{% block title %}{% if mode == 'cancel' %}Cancel RSVP{% else %}Thank You{% endif %} - Casino Royale Awards{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="thank-you-message">
-        <h1>Thank You</h1>
-        <p>Thank you for letting us know that you won't be able to attend our event.</p>
-        <p>We're sorry you can't make it, but we appreciate you taking the time to respond.</p>
-        
-        <div class="actions">
-            <a href="{{ url_for('index') }}" class="btn btn-primary">Return to Home</a>
-        </div>
+        {% if mode == 'cancel' %}
+            <h1>Cancel Your RSVP</h1>
+            <p style="margin: 1.5rem 0;">Plans changed? Enter the name and email you RSVP'd with and we'll release your seats for other guests.</p>
+
+            {% if error %}
+                <div class="alert alert-error">{{ error }}</div>
+            {% endif %}
+
+            <form id="cancel-form" method="POST" action="{{ url_for('cancel') }}">
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="full_name">Full Name *</label>
+                            <input type="text" id="full_name" name="full_name" autocomplete="name" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" autocomplete="email" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">Cancel my RSVP</button>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">Keep my RSVP</a>
+                </div>
+            </form>
+        {% else %}
+            <h1>Thank You</h1>
+            <p style="margin: 1.5rem 0;">Thank you for letting us know you won't be able to attend &mdash; you've been marked off the guest list.</p>
+            <p>We're sorry to miss you, and we appreciate you taking the time to respond.</p>
+            <p style="margin-top: 1.5rem;">Changed your mind? You can still <a href="{{ url_for('rsvp') }}">RSVP until 2 October 2026</a>.</p>
+            <div class="actions">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to the Invitation</a>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

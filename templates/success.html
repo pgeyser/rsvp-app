@@ -1,14 +1,32 @@
 {% extends "base.html" %}
 
-{% block title %}RSVP Confirmed - Masquerade Awards{% endblock %}
+{% block title %}RSVP Confirmed - Casino Royale Awards{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="success-message">
         <h1>RSVP Confirmed!</h1>
         <p style="color: #f8f8f8; font-size: 1.2rem; margin-bottom: 2rem;">Thank you for your RSVP, {{ rsvp_data.full_name }} {{ rsvp_data.surname }}!</p>
-        <p style="color: #d4af37; font-style: italic; font-size: 1.1rem;">We look forward to seeing you at the Masquerade Awards Ceremony!</p>
-        
+        <p style="color: #c8d1dd; font-style: italic; font-size: 1.1rem;">We look forward to seeing you at the Casino Royale Awards Ceremony!</p>
+
+        <div class="confirmation-details">
+            <h2>The Evening</h2>
+            <div class="details-grid">
+                <div class="detail">
+                    <strong>Date:</strong> Friday, 30 October 2026
+                </div>
+                <div class="detail">
+                    <strong>Time:</strong> 16h30 for 17h00
+                </div>
+                <div class="detail">
+                    <strong>Venue:</strong> D'Aria Winery, Tygerberg Valley Road, Durbanville
+                </div>
+                <div class="detail">
+                    <strong>Dress Code:</strong> Black tie &middot; Cash bar
+                </div>
+            </div>
+        </div>
+
         <div class="confirmation-details">
             <h2>Your Details</h2>
             <div class="details-grid">
@@ -21,12 +39,9 @@
                 <div class="detail">
                     <strong>Phone:</strong> {{ rsvp_data.cellphone }}
                 </div>
-                {% if rsvp_data.bringing_guest == 'yes' and rsvp_data.guest_list %}
+                {% if partner_name %}
                 <div class="detail">
-                    <strong>Guests:</strong><br>
-                    {% for guest in rsvp_data.guest_list.split('\n') if guest.strip() %}
-                        {{ guest.strip() }}<br>
-                    {% endfor %}
+                    <strong>Partner:</strong> {{ partner_name }}
                 </div>
                 {% endif %}
                 <div class="detail">
@@ -39,25 +54,64 @@
                 {% endif %}
                 {% if user_seat %}
                 <div class="detail">
-                    <strong>Your Seat:</strong> {{ user_seat.table }} - Seat {{ user_seat.seat }}
+                    <strong>Your Seat:</strong> {{ user_seat.table }} &mdash; Seat {{ user_seat.seat }}
+                </div>
+                {% endif %}
+                {% if partner_name and guest_seat %}
+                <div class="detail">
+                    <strong>{{ partner_name }}'s Seat:</strong> {{ guest_seat.table }} &mdash; Seat {{ guest_seat.seat }}
                 </div>
                 {% endif %}
             </div>
+            {% if different_tables %}
+            <p style="margin-top: 1rem; font-style: italic;">Note: you and {{ partner_name }} are currently at different tables. You can move seats on the seating chart until {{ deadline }}.</p>
+            {% endif %}
         </div>
 
         <div class="next-steps">
             <h3>What's Next?</h3>
-            <ul>                
-                <li>{% if user_seat %}You can change your seat until October 31, 2025{% else %}Please select your seat from the seating chart{% endif %}</li>                
+            <ul>
+                {% if not user_seat %}
+                    <li>Please select your seat from the seating chart</li>
+                {% elif not deadline_passed %}
+                    <li>You can change your seat until {{ deadline }}</li>
+                {% else %}
+                    <li>Your seat is locked in &mdash; see you on the night</li>
+                {% endif %}
+                {% if partner_name and not guest_seat %}
+                    <li>{{ partner_name }} still needs a seat &mdash; pick one on the seating chart</li>
+                {% endif %}
+                <li>Bookmark this page &mdash; it's your link to view or change your booking anytime</li>
             </ul>
         </div>
 
         <div class="actions">
-            {% if not user_seat %}
-                <a href="{{ url_for('seating_chart', email=rsvp_data.email) }}" class="btn btn-primary">Select Your Seat</a>
+            {% if not deadline_passed %}
+                <a href="{{ url_for('seating_chart', email=rsvp_data.email) }}" class="btn btn-primary">
+                    {% if user_seat %}Change My Seat{% else %}Select Your Seat{% endif %}
+                </a>
             {% endif %}
+            <a id="ics-link" href="#" download="casino-royale-awards.ics" class="btn btn-secondary">Add to Calendar</a>
+            <a href="https://www.google.com/maps/search/?api=1&amp;query=D%27Aria+Winery+Durbanville" target="_blank" rel="noreferrer" class="btn btn-secondary">Directions to D'Aria</a>
             <a href="{{ url_for('index') }}" class="btn btn-secondary">Return to Home</a>
         </div>
+
+        <p style="margin-top: 2rem; font-size: 0.9rem;">
+            Can't make it anymore? <a href="{{ url_for('cancel') }}">Cancel your RSVP</a>.
+        </p>
     </div>
 </div>
+
+<script>
+// Same calendar entry as the landing page
+const icsLines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Harcourts Dunn//Casino Royale//EN', 'BEGIN:VEVENT',
+    'UID:casino-royale-2026@harcourtsdunn', 'DTSTART:20261030T143000Z', 'DTEND:20261030T210000Z',
+    'SUMMARY:Casino Royale Awards & Year-End Function',
+    "LOCATION:D'Aria Winery\\, Tygerberg Valley Road\\, Durbanville\\, 7550",
+    'DESCRIPTION:Black tie. 16h30 for 17h00.', 'END:VEVENT', 'END:VCALENDAR'
+];
+document.getElementById('ics-link').href =
+    'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsLines.join('\r\n'));
+</script>
 {% endblock %}

@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Casino Royale Awards{% endblock %}
+
+{% block content %}
+<div class="container">
+{% if not authed %}
+    <h1>Organiser Login</h1>
+    <form method="POST" action="{{ url_for('admin') }}" class="admin-login">
+        {% if login_error %}<p class="error">{{ login_error }}</p>{% endif %}
+        <div class="form-group">
+            <label for="password">Admin password</label>
+            <input type="password" id="password" name="password" required autofocus>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Log in</button>
+        </div>
+    </form>
+{% else %}
+    <h1>Seating Admin</h1>
+
+    <div class="admin-toolbar">
+        <a href="{{ url_for('rsvp') }}" class="btn btn-primary">Book a guest</a>
+        <a href="{{ url_for('admin_export_csv') }}" class="btn btn-primary">Download CSV</a>
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-secondary">Log out</a>
+    </div>
+
+    <div class="admin-hint" id="admin-hint">
+        Click an occupied seat to pick someone up, then click any other seat to move them
+        (clicking an occupied seat swaps the two). Click the same seat again to put them back.
+        The {{ deadline }} RSVP deadline does not apply while you are logged in &mdash; you can
+        still book late guests and move anyone.
+    </div>
+
+    <div class="admin-actionbar" id="admin-actionbar" style="display:none;">
+        <span id="holding-label"></span>
+        <button type="button" class="btn btn-secondary" onclick="unseatHeld()">Remove from seat</button>
+        <button type="button" class="btn btn-secondary" onclick="clearSelection()">Cancel</button>
+    </div>
+
+    {% if unseated %}
+    <div class="admin-unseated">
+        <h3>Waiting for a seat</h3>
+        <p>Select a person, then click an empty seat to place them.</p>
+        <div class="unseated-list">
+            {% for person in unseated %}
+                <button type="button" class="unseated-chip" data-email="{{ person.email }}"
+                        onclick="pickUnseated(this)">{{ person.name }}</button>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="seating-chart">
+        {% for table in tables %}
+            <div class="table" data-table="{{ table.key }}" id="{{ table.key }}">
+                <h3>{{ table.number }} <span class="table-film">{{ table.name }}</span></h3>
+                <div class="seats-grid">
+                    {% for i in range(table.occupants|length) %}
+                        {% set occ = table.occupants[i] %}
+                        <div class="seat {{ 'occupied' if occ else 'available' }} admin-seat"
+                             data-table="{{ table.key }}" data-seat="{{ i }}"
+                             title="{{ (occ.full_name ~ ' ' ~ occ.surname).strip() if occ else 'Available' }}"
+                             onclick="seatClicked(this)">
+                            <span class="seat-number">{{ i + 1 }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="admin-occupant-names">
+                    {% for occ in table.occupants %}
+                        {% if occ %}
+                            <span class="admin-occ-name">{{ loop.index }}. {{ (occ.full_name ~ ' ' ~ occ.surname).strip() }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+</div>
+
+<style>
+.admin-login { max-width: 380px; margin: 2rem auto; }
+.admin-toolbar { display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.admin-hint { text-align: center; color: #c8d1dd; margin-bottom: 1rem; font-size: 0.95rem; }
+.admin-actionbar {
+    position: sticky; top: 10px; z-index: 50;
+    display: flex; gap: 0.75rem; align-items: center; justify-content: center;
+    background: #1f2733; border: 1px solid #c8a45a; border-radius: 8px;
+    padding: 0.6rem 1rem; margin-bottom: 1rem; color: #fff; flex-wrap: wrap;
+}
+.admin-unseated { text-align: center; margin-bottom: 1.5rem; color: #fff; }
+.unseated-list { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+.unseated-chip {
+    background: transparent; border: 1px solid #c8a45a; color: #c8a45a;
+    border-radius: 999px; padding: 0.35rem 0.9rem; cursor: pointer; font: inherit;
+}
+.unseated-chip.picked { background: #c8a45a; color: #1f2733; }
+.admin-seat.holding { outline: 3px solid #c8a45a; outline-offset: 2px; }
+.admin-occupant-names { margin-top: 0.75rem; color: #c8d1dd; font-size: 0.85rem;
+    display: flex; flex-direction: column; gap: 0.15rem; text-align: left; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+{% if authed %}
+<script>
+let held = null;        // {table, seat, name} — seat being moved
+let pickedEmail = null; // unseated person waiting for an empty seat
+
+function notify(message, type = 'info') {
+    const n = document.createElement('div');
+    n.style.cssText = `position:fixed;top:20px;right:20px;z-index:1000;color:#fff;
+        padding:1rem 2rem;border-radius:8px;box-shadow:0 5px 15px rgba(0,0,0,.2);
+        background:${type === 'success' ? '#2f5da8' : type === 'error' ? '#7a2733' : '#64748b'};`;
+    n.textContent = message;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+}
+
+function seatEl(table, seat) {
+    return document.querySelector(`.admin-seat[data-table="${table}"][data-seat="${seat}"]`);
+}
+
+function clearSelection() {
+    if (held) seatEl(held.table, held.seat)?.classList.remove('holding');
+    held = null;
+    pickedEmail = null;
+    document.querySelectorAll('.unseated-chip.picked').forEach(c => c.classList.remove('picked'));
+    document.getElementById('admin-actionbar').style.display = 'none';
+}
+
+function pickUnseated(chip) {
+    clearSelection();
+    pickedEmail = chip.dataset.email;
+    chip.classList.add('picked');
+    notify(`Now click an empty seat for ${chip.textContent.trim()}.`, 'info');
+}
+
+function post(url, body) {
+    return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    }).then(r => r.json());
+}
+
+// The chart can go stale if another organiser (or a guest) changes seats while
+// this page is open — after any rejected action, resync from the server.
+function fail(message) {
+    notify(`${message} — refreshing the chart…`, 'error');
+    setTimeout(() => window.location.reload(), 1500);
+}
+
+function seatClicked(el) {
+    const table = el.dataset.table;
+    const seat = parseInt(el.dataset.seat, 10);
+    const occupied = el.classList.contains('occupied');
+
+    // Placing an unseated person onto an empty seat
+    if (pickedEmail && !occupied && !held) {
+        post('/api/admin/assign-seat', { email: pickedEmail, table, seat })
+            .then(d => d.success ? refresh(d.message) : fail(d.error));
+        return;
+    }
+
+    if (!held) {
+        if (!occupied) { notify('That seat is empty — pick someone up first.', 'info'); return; }
+        held = { table, seat, name: el.title };
+        el.classList.add('holding');
+        const bar = document.getElementById('admin-actionbar');
+        document.getElementById('holding-label').textContent = `Moving: ${held.name}`;
+        bar.style.display = 'flex';
+        return;
+    }
+
+    // Clicking the held seat again cancels
+    if (held.table === table && held.seat === seat) { clearSelection(); return; }
+
+    post('/api/admin/move-seat', {
+        from_table: held.table, from_seat: held.seat,
+        to_table: table, to_seat: seat
+    }).then(d => d.success ? refresh(d.message) : fail(d.error));
+}
+
+function unseatHeld() {
+    if (!held) return;
+    post('/api/admin/unseat', { table: held.table, seat: held.seat })
+        .then(d => d.success ? refresh(d.message) : fail(d.error));
+}
+
+function refresh(message) {
+    sessionStorage.setItem('adminNotice', message);
+    window.location.reload();
+}
+
+const notice = sessionStorage.getItem('adminNotice');
+if (notice) {
+    sessionStorage.removeItem('adminNotice');
+    notify(notice, 'success');
+}
+</script>
+{% endif %}
+{% endblock %}

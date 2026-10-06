@@ -37,7 +37,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Structure**: Nested JSON with separate collections for RSVPs and seating arrangements
 - **Schema Design**: 
   - RSVPs indexed by email address with guest details, dietary requirements, and timestamps
-  - Seating organized by table with 10-seat capacity per table (10 tables total)
+  - Seating organized by table: 15 tables of 10 seats, except Table Seven (Moonraker) which seats 11 (`TABLE_SIZES` in `app.py`)
 - **Persistence**: Manual file I/O operations with load/save functions
 
 ### Key Features
@@ -45,7 +45,7 @@ Preferred communication style: Simple, everyday language.
 - **Guest List Handling**: Support for bringing additional guests with name collection
 - **Dietary Accommodations**: Dietary requirements and food allergy tracking
 - **Seating System**: Interactive seating chart with availability visualization
-- **Deadline Management**: Configurable deadline for seat changes (currently set to October 1, 2025)
+- **Deadline Management**: Configurable deadline for seat changes (currently 2 October 2026). It applies to guests only; an organiser logged in to `/admin` can still book and move people afterwards
 - **Form Validation**: Both client-side and server-side validation for data integrity
 
 ### Security Considerations

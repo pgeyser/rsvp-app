@@ -1,0 +1,18 @@
+# Keep the runtime data out of the image — the cluster stores it on a persistent volume
+data/
+
+# Local development and VCS clutter
+.git/
+.claude/
+__pycache__/
+*.pyc
+.dockerignore
+Dockerfile
+k8s/
+
+# Leftovers from the old Replit setup / previous theme
+.replit
+replit.md
+uv.lock
+pyproject.toml
+attached_assets/

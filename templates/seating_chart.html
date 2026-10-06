@@ -1,17 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Seating Chart - Masquerade Awards{% endblock %}
+{% block title %}Seating Chart - Casino Royale Awards{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>Select Your Table for the Masquerade</h1>
-    
+    <h1>Place Your Bets &mdash; Select Your Table</h1>
+
     <div class="deadline-notice">
-        <p><strong>Note:</strong> Seat selection deadline is {{ deadline }}. 
-        {% if deadline_passed %}
-            <span class="error">The deadline has passed. You cannot change your seat.</span>
+        <p>
+        {% if is_admin %}
+            <strong>Organiser mode:</strong>
+            <span class="info">the {{ deadline }} deadline does not apply to you &mdash; you can still book and move seats for {{ rsvp_data.full_name }} {{ rsvp_data.surname }}.</span>
         {% else %}
-            <span class="info">You can still change your seat until this date.</span>
+            <strong>Note:</strong> Seat selection deadline is {{ deadline }}.
+            {% if deadline_passed %}
+                <span class="error">The deadline has passed. You cannot change your seat.</span>
+            {% else %}
+                <span class="info">You can still change your seat until this date. Click your own seat to deselect it.</span>
+            {% endif %}
         {% endif %}
         </p>
     </div>
@@ -33,36 +39,39 @@
 
     <div class="seating-chart">
         {% for table_name, table_seats in seats.items() %}
-            <div class="table" data-table="{{ table_name }}">                
-                <h3>{{ table_name.replace('_', ' ').title() }}
+            <div class="table" data-table="{{ table_name }}" id="{{ table_name }}">
+                <h3>{{ table_titles.get(table_name, table_name.replace('_', ' ').title()) }}
+                    <span class="table-film">{{ table_names.get(table_name, '') }}</span>
                 </h3>
                 <div class="seats-grid">
-                    {% for i in range(10) %}
-                        <div class="seat {% if table_seats[i] %}occupied{% else %}available{% endif %}" 
-                             data-table="{{ table_name }}" 
+                    {% for i in range(table_seats|length) %}
+                        {% set occ = table_seats[i] %}
+                        {% set mine = occ and (occ.email == email or occ.email == email + '_guest') %}
+                        <div class="seat {% if mine %}selected{% elif occ %}occupied{% else %}available{% endif %}"
+                             data-table="{{ table_name }}"
                              data-seat="{{ i }}"
-                            {% if table_seats[i] %}
-                                title="{{ table_seats[i].full_name }} {{ table_seats[i].surname }}"
+                            {% if occ %}
+                                title="{{ occ.full_name }} {{ occ.surname }}"
                             {% else %}
                                 title="Available"
                             {% endif %}
-                             {% if not deadline_passed and not table_seats[i] %}onclick="selectSeat('{{ table_name }}', {{ i }})"{% endif %}>
+                             {% if not deadline_passed and (mine or not occ) %}onclick="selectSeat('{{ table_name }}', {{ i }})"{% elif occ and not mine %}onclick="showOccupant(this)"{% endif %}>
                             <span class="seat-number">{{ i + 1 }}</span>
-                            <!-- {% if table_seats[i] %}
-                                <span class="occupant-name">{{ table_seats[i].full_name }} {{ table_seats[i].surname }}</span>
-                            {% endif %} -->
+                            {% if mine %}
+                                <span class="occupant-name">{{ 'You' if occ.email == email else 'Guest' }}</span>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>  <br/>
-                <span class="table-occupants-icon" 
+                <span class="table-occupants-icon"
                         title="Show all occupants"
                         onclick="toggleTableOccupants('{{ table_name }}')"
                         style="cursor:pointer;">
-                        show quests ?
-                    </span>              
-                <div class="table-occupants-list" id="occupants-list-{{ table_name }}" style="display:none; margin-top:1em; color:white"></div>        
+                        Show guests
+                    </span>
+                <div class="table-occupants-list" id="occupants-list-{{ table_name }}" style="display:none; margin-top:1em; color:white"></div>
             </div>
-        {% endfor %}          
+        {% endfor %}
     </div>
     <div style="width: 100%; text-align: center;" class="form-actions">
         <a href="{{ url_for('success', email=email) }}" class="btn btn-secondary">Continue to Confirmation</a>
@@ -71,7 +80,20 @@
 
 <script>
 const userEmail = '{{ email }}';
-let selectedSeat = null;
+const hasGuest = {{ 'true' if has_guest else 'false' }};
+
+// Seed selection state from the server so reloads keep working
+let selectedSeats = [
+{%- for table_name, table_seats in seats.items() %}
+    {%- for i in range(table_seats|length) %}
+        {%- if table_seats[i] and table_seats[i].email == email %}
+    {key: '{{ table_name }}-{{ i }}', guest: false},
+        {%- elif table_seats[i] and table_seats[i].email == email + '_guest' %}
+    {key: '{{ table_name }}-{{ i }}', guest: true},
+        {%- endif %}
+    {%- endfor %}
+{%- endfor %}
+];
 
 // Notification function
 function showNotification(message, type = 'info') {
@@ -81,8 +103,9 @@ function showNotification(message, type = 'info') {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+        background: ${type === 'success' ? '#2f5da8' : type === 'error' ? '#1f2733' : '#64748b'};
         color: white;
+        border: 2px solid ${type === 'error' ? '#c8d1dd' : 'transparent'};
         padding: 1rem 2rem;
         border-radius: 8px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
@@ -92,15 +115,15 @@ function showNotification(message, type = 'info') {
         transition: all 0.3s ease;
     `;
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
-    
+
     // Animate in
     setTimeout(() => {
         notification.style.opacity = '1';
         notification.style.transform = 'translateX(0)';
     }, 10);
-    
+
     // Animate out and remove
     setTimeout(() => {
         notification.style.opacity = '0';
@@ -118,78 +141,96 @@ function selectSeat(table, seatIndex) {
         alert('Seat selection deadline has passed.');
         return;
     {% endif %}
-    
+
+    const seatKey = `${table}-${seatIndex}`;
+    const seatElement = document.querySelector(`[data-table="${table}"][data-seat="${seatIndex}"]`);
+    const seatObj = selectedSeats.find(s => s.key === seatKey);
+
+    // Clicking one of your own seats deselects it
+    if (seatObj) {
+        fetch('/api/select-seat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: userEmail,
+                table: table,
+                seat: seatIndex,
+                guest: seatObj.guest,
+                clear: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                selectedSeats = selectedSeats.filter(s => s.key !== seatKey);
+                seatElement.classList.remove('selected');
+                seatElement.classList.add('available');
+                seatElement.title = 'Available';
+                seatElement.innerHTML = `<span class="seat-number">${seatIndex + 1}</span>`;
+                showNotification('Seat deselected.', 'info');
+            } else {
+                showNotification(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error deselecting seat. Please try again.', 'error');
+        });
+        return;
+    }
+
+    // Limit selection to 2 if has guest, else 1
+    if ((hasGuest && selectedSeats.length >= 2) || (!hasGuest && selectedSeats.length >= 1)) {
+        showNotification('You can only select ' + (hasGuest ? '2 seats (one for you and one for your partner).' : '1 seat.'), 'error');
+        return;
+    }
+
+    // Determine if this is for guest or user
+    const isGuest = hasGuest && selectedSeats.length === 1;
+
     fetch('/api/select-seat', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             email: userEmail,
             table: table,
-            seat: seatIndex
+            seat: seatIndex,
+            guest: isGuest
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Remove user from any previous seat
-            document.querySelectorAll('.seat').forEach(seat => {
-                if (seat.classList.contains('selected')) {
-                    seat.classList.remove('selected');
-                    seat.classList.add('available');
-                    seat.innerHTML = '<span class="seat-number">' + (parseInt(seat.dataset.seat) + 1) + '</span>';
-                }
-            });
-            
-            // Update the selected seat
-            const seatElement = document.querySelector(`[data-table="${table}"][data-seat="${seatIndex}"]`);
+            // Mark seat as selected
+            selectedSeats.push({key: seatKey, guest: isGuest});
             seatElement.classList.remove('available');
             seatElement.classList.add('selected');
-            seatElement.innerHTML = '<span class="seat-number">' + (seatIndex + 1) + '</span><span class="occupant-name">You</span>';
-            
-            // Show success message
+            seatElement.innerHTML = `<span class="seat-number">${seatIndex + 1}</span><span class="occupant-name">${isGuest ? 'Guest' : 'You'}</span>`;
             showNotification(data.message, 'success');
-            
-            // Update seat info
-            showSeatInfo(table, seatIndex);
         } else {
-            alert('Error: ' + data.error);
+            showNotification(data.error, 'error');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('Error selecting seat. Please try again.');
+        showNotification('Error selecting seat. Please try again.', 'error');
     });
 }
 
-function titleCase(str) {
-    if (!str) return 'Unknown Table';
-    return str.replace('_', ' ').replace(/\w\S*/g, (txt) => 
-        txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-    );
-}
-
-function showSeatInfo(table, seatIndex) {
-    fetch(`/api/seat-info?table=${table}&seat=${seatIndex}`)
-    .then(response => response.json())
-    .then(data => {
-        const infoDiv = document.getElementById('seat-info');
-        if (data.occupied) {
-            infoDiv.innerHTML = `<p><strong>Seat ${seatIndex + 1} at ${titleCase(table)}:</strong> Occupied by ${data.occupant}</p>`;
-        } else {
-            infoDiv.innerHTML = `<p><strong>Seat ${seatIndex + 1} at ${titleCase(table)}:</strong> Available</p>`;
-        }
-    });
+// Tapping an occupied seat shows who is sitting there (tooltips are hover-only)
+function showOccupant(seatElement) {
+    const name = seatElement.getAttribute('title');
+    if (name && name !== 'Available') {
+        showNotification(`This seat is taken by ${name}.`, 'info');
+    }
 }
 
 function toggleTableOccupants(tableName) {
     const tableDiv = document.querySelector(`.table[data-table="${tableName}"]`);
-    const seats = tableDiv.querySelectorAll('.seat.occupied');
+    const seats = tableDiv.querySelectorAll('.seat.occupied, .seat.selected');
     const occupantsListDiv = document.getElementById(`occupants-list-${tableName}`);
 
     if (occupantsListDiv.style.display === 'none' || occupantsListDiv.style.display === '') {
-        // Build occupants list
+        // Build occupants list (textContent keeps guest-supplied names inert)
+        occupantsListDiv.innerHTML = '';
         const occupants = [];
         seats.forEach(seat => {
             const occupant = seat.getAttribute('title');
@@ -198,32 +239,24 @@ function toggleTableOccupants(tableName) {
             }
         });
 
-        let html = '<strong></strong><p style="margin:0.5em 0 0 0; padding-left:1em;">';
         if (occupants.length > 0) {
             occupants.forEach(name => {
-                html += `<p>${name}</p>`;
+                const p = document.createElement('p');
+                p.textContent = name;
+                occupantsListDiv.appendChild(p);
             });
         } else {
-            html += '<p><em>No one assigned yet.</em></p>';
+            const p = document.createElement('p');
+            const em = document.createElement('em');
+            em.textContent = 'No one assigned yet.';
+            p.appendChild(em);
+            occupantsListDiv.appendChild(p);
         }
-        html += '</p>';
 
-        occupantsListDiv.innerHTML = html;
         occupantsListDiv.style.display = 'block';
     } else {
         occupantsListDiv.style.display = 'none';
     }
 }
-
-// Add hover effect for seat info
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.seat').forEach(seat => {
-        seat.addEventListener('mouseenter', function() {
-            const table = this.dataset.table;
-            const seatIndex = this.dataset.seat;
-            showSeatInfo(table, parseInt(seatIndex));
-        });
-    });
-});
 </script>
 {% endblock %}
